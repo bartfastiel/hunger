@@ -11,3 +11,5 @@ Step by Step
 
 This will output a graph for each ingregient (or ingredient category),
 each with how you felt in the days after the consumption.
+
+![example](README_example_output.png)
