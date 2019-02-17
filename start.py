@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import re
 from pprint import pprint
+import matplotlib.pyplot as plt
 
 
 def load_ingredients(raw):
@@ -33,8 +34,9 @@ def resolve_ingredient(synonyms, ingredient):
 
 
 def process_diary(ingredients):
-    contents_per_time = {}
-    diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d+) (\\d+):(\\d+) (\\d+)(.(\\d+))?$")
+    ingredients_diary = {}
+    wellbeing_diary = {}
+    diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d+) (\\d+):(\\d+) ((\\d+)(.(\\d+))?)$")
     next_day = 1
     time = "?"
     for line in diary_raw:
@@ -44,30 +46,32 @@ def process_diary(ingredients):
         else:
             if next_day:
                 m = diary_title_pattern.match(line)
-                if m:
-                    year = m.group(3).zfill(2)
-                    month = m.group(2).zfill(2)
-                    day = m.group(1).zfill(2)
-
-                    hour = m.group(4).zfill(2)
-                    minute = m.group(5).zfill(2)
-
-                    time = year + "-" + month + "-" + day + "-" + hour + "-" + minute
-                else:
+                if not m:
                     raise ValueError('Cannot parse diary title line: ' + line)
+
+                year = m.group(3).zfill(2)
+                month = m.group(2).zfill(2)
+                day = m.group(1).zfill(2)
+
+                hour = m.group(4).zfill(2)
+                minute = m.group(5).zfill(2)
+
+                time = year + "-" + month + "-" + day + " " + hour + "-" + minute
+
+                wellbeing_diary[time] = float(m.group(6))
             else:
                 contents = []
-                if time in contents_per_time:
-                    contents = contents_per_time[time]
+                if time in ingredients_diary:
+                    contents = ingredients_diary[time]
                 else:
-                    contents_per_time[time] = contents
+                    ingredients_diary[time] = contents
                 contents.append(line)
                 if line in ingredients:
                     for synonym in ingredients[line]:
                         contents.append(synonym)
-                contents_per_time[time] = contents
+                ingredients_diary[time] = contents
             next_day = 0
-    return contents_per_time
+    return ingredients_diary, wellbeing_diary
 
 
 with open("ingredients.txt") as f:
@@ -78,8 +82,14 @@ with open("diary.txt") as f:
 
 ingredients_unresolved = load_ingredients(ingredients_raw)
 ingredients_resolved = resolve_ingredients(ingredients_unresolved)
-diary = process_diary(ingredients_resolved)
+ingredients_diary, wellbeing_diary = process_diary(ingredients_resolved)
 
-pprint(diary)
+pprint(ingredients_diary)
+pprint(wellbeing_diary)
 print()
 print()
+
+x = wellbeing_diary.keys()
+y = wellbeing_diary.values()
+plt.plot(x, y)
+plt.show()
