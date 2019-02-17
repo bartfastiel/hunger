@@ -16,11 +16,11 @@ def load_ingredients(raw):
 
 
 def resolve_ingredients(synonyms):
-    ingredients_resolved = {}
+    resolved = {}
     for ingredient in synonyms.keys():
         ingredient_synonyms_resolved = resolve_ingredient(synonyms, ingredient)
-        ingredients_resolved[ingredient] = ingredient_synonyms_resolved
-    return ingredients_resolved
+        resolved[ingredient] = ingredient_synonyms_resolved
+    return resolved
 
 
 def resolve_ingredient(synonyms, ingredient):
@@ -34,6 +34,9 @@ def resolve_ingredient(synonyms, ingredient):
 
 with open("ingredients.txt") as f:
     ingredients_raw = f.readlines()
+
+with open("some.txt") as f:
+    diary_raw = f.readlines()
 
 ingredients_unresolved = load_ingredients(ingredients_raw)
 
@@ -49,11 +52,12 @@ print()
 
 contents_per_time = {}
 
-with open("some.txt", "r", encoding='utf-8') as f:
-    ingredient_pattern = re.compile("^(\\d+)\.(\\d+)\.(\\d+) (\\d+):(\\d+) (\\d+)(.(\\d+))?$")
+
+def process_diary():
+    diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d+) (\\d+):(\\d+) (\\d+)(.(\\d+))?$")
     next_day = 1
     time = "?"
-    for line in f:
+    for line in diary_raw:
         line = line.rstrip()
         if not line:
             next_day = 1
@@ -61,7 +65,7 @@ with open("some.txt", "r", encoding='utf-8') as f:
         else:
             if next_day:
                 print('day:' + line)
-                m = ingredient_pattern.match(line)
+                m = diary_title_pattern.match(line)
                 if m:
                     year = m.group(3).zfill(2)
                     month = m.group(2).zfill(2)
@@ -88,7 +92,9 @@ with open("some.txt", "r", encoding='utf-8') as f:
                 print(line)
             next_day = 0
 
+
+process_diary()
+
 pprint(contents_per_time)
 print()
 print()
-
