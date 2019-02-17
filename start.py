@@ -3,30 +3,43 @@
 import re
 from pprint import pprint
 
-ingredients = {}
 
-with open("ingredients.txt", "r", encoding='utf-8') as f:
-    ingredient_pattern = re.compile("^\\s*(.*?)\\s*:\\s*(.*)\\s*")
-    for line in f:
-        line = line.rstrip()
-        m = ingredient_pattern.match(line)
-        if m:
-            ingredients[m.group(1)] = m.group(2).split(",")
-
-pprint(ingredients)
-print()
-print()
+def load_ingredients():
+    ingredients = {}
+    with open("ingredients.txt", "r", encoding='utf-8') as f:
+        ingredient_pattern = re.compile("^\\s*(.*?)\\s*:\\s*(.*)\\s*")
+        for line in f:
+            line = line.rstrip()
+            m = ingredient_pattern.match(line)
+            if m:
+                ingredients[m.group(1)] = m.group(2).split(",")
+    return ingredients
 
 
-ingredients_resolved = {}
-for ingredient, ingredient_synonyms in ingredients.items():
+def resolve_ingredients(synonyms):
+    ingredients_resolved = {}
+    for ingredient in synonyms.keys():
+        ingredient_synonyms_resolved = resolve_ingredient(synonyms, ingredient)
+        ingredients_resolved[ingredient] = ingredient_synonyms_resolved
+    return ingredients_resolved
+
+
+def resolve_ingredient(synonyms, ingredient):
     ingredient_synonyms_resolved = []
-    for ingredient_synonym in ingredient_synonyms:
-        ingredient_synonyms_resolved.append(ingredient_synonym)
-        if ingredient_synonym in ingredients:
-            for ingredient_synonym_synonyms in ingredients[ingredient_synonym]:
-                ingredient_synonyms_resolved.append(ingredient_synonym_synonyms)
-    ingredients_resolved[ingredient] = ingredient_synonyms_resolved
+    for synonym in synonyms[ingredient]:
+        ingredient_synonyms_resolved.append(synonym)
+        if synonym in synonyms:
+            ingredient_synonyms_resolved.extend(resolve_ingredient(synonyms, synonym))
+    return ingredient_synonyms_resolved
+
+
+ingredients_unresolved = load_ingredients()
+
+pprint(ingredients_unresolved)
+print()
+print()
+
+ingredients_resolved = resolve_ingredients(ingredients_unresolved)
 
 pprint(ingredients_resolved)
 print()
