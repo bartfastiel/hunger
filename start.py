@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import datetime
-from pprint import pprint
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import figure
+import constant
 
 
 def load_ingredients(raw):
@@ -120,6 +119,7 @@ for inspected in all_ingredients_unique:
         axs[plot_number].plot([x-consumption for x in x], y, linestyle='solid')
 
     axs[plot_number].set_title(inspected)
+    axs[plot_number].set_xlim([-1*constant.DAY, +5*constant.DAY])
 
     plot_number += 1
 
