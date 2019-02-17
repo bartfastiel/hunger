@@ -1,0 +1,5 @@
+strawberry marmelade: saccharose,strawberry
+strawberry: fructose,nut
+saccharose: sugar
+Cheddar: cheese
+cheese: dairy product
