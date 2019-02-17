@@ -37,7 +37,7 @@ def resolve_ingredient(synonyms, ingredient):
 def process_diary(ingredients):
     ingredients_per_datetime = {}
     wellbeing_per_datetime = {}
-    diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d+) (\\d+):(\\d+) (-?(\\d+)(.(\\d+))?)$")
+    diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d*) (\\d+):(\\d+) (-?(\\d+)(.(\\d+))?)$")
     next_day = 1
     first_datetime = 0
     diary_offset = 0
@@ -51,7 +51,9 @@ def process_diary(ingredients):
                 if not m:
                     raise ValueError('Cannot parse diary title line: ' + line)
 
-                year = m.group(3).zfill(2)
+                year = datetime.now().year
+                if m.group(3):
+                    year = m.group(3).zfill(2)
                 month = m.group(2).zfill(2)
                 day = m.group(1).zfill(2)
 
