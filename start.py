@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import re
+from datetime import datetime
 from pprint import pprint
 import matplotlib.pyplot as plt
 
@@ -34,11 +35,11 @@ def resolve_ingredient(synonyms, ingredient):
 
 
 def process_diary(ingredients):
-    ingredients_diary = {}
-    wellbeing_diary = {}
+    ingredients_per_datetime = {}
+    wellbeing_per_datetime = {}
     diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d+) (\\d+):(\\d+) ((\\d+)(.(\\d+))?)$")
     next_day = 1
-    time = "?"
+    diary_datetime = 0
     for line in diary_raw:
         line = line.rstrip()
         if not line:
@@ -56,22 +57,22 @@ def process_diary(ingredients):
                 hour = m.group(4).zfill(2)
                 minute = m.group(5).zfill(2)
 
-                time = year + "-" + month + "-" + day + " " + hour + "-" + minute
+                diary_datetime = datetime(int(year), int(month), int(day), int(hour), int(minute))
 
-                wellbeing_diary[time] = float(m.group(6))
+                wellbeing_per_datetime[diary_datetime] = float(m.group(6))
             else:
                 contents = []
-                if time in ingredients_diary:
-                    contents = ingredients_diary[time]
+                if diary_datetime in ingredients_per_datetime:
+                    contents = ingredients_per_datetime[diary_datetime]
                 else:
-                    ingredients_diary[time] = contents
+                    ingredients_per_datetime[diary_datetime] = contents
                 contents.append(line)
                 if line in ingredients:
                     for synonym in ingredients[line]:
                         contents.append(synonym)
-                ingredients_diary[time] = contents
+                ingredients_per_datetime[diary_datetime] = contents
             next_day = 0
-    return ingredients_diary, wellbeing_diary
+    return ingredients_per_datetime, wellbeing_per_datetime
 
 
 with open("ingredients.txt") as f:
@@ -91,5 +92,5 @@ print()
 
 x = wellbeing_diary.keys()
 y = wellbeing_diary.values()
-plt.plot(x, y)
+plt.plot_date(x, y, linestyle='solid')
 plt.show()
