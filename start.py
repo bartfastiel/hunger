@@ -14,7 +14,7 @@ def load_ingredients(raw):
         line = line.rstrip()
         m = ingredient_pattern.match(line)
         if m:
-            ingredients[m.group(1)] = m.group(2).split(",")
+            ingredients[m.group(1)] = [x.strip() for x in m.group(2).split(",")]
     return ingredients
 
 
