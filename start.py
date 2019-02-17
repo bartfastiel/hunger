@@ -37,7 +37,8 @@ def resolve_ingredient(synonyms, ingredient):
 def process_diary(ingredients):
     ingredients_per_datetime = {}
     wellbeing_per_datetime = {}
-    diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d*) (\\d+):(\\d+) (-?(\\d+)(.(\\d+))?)$")
+    well_being = 0
+    diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d*) (\\d+):(\\d+)( -?(\\d+)(.(\\d+))?)?$")
     next_day = 1
     first_datetime = 0
     diary_offset = 0
@@ -66,7 +67,9 @@ def process_diary(ingredients):
                     first_datetime = diary_datetime
 
                 diary_offset = (diary_datetime - first_datetime).total_seconds()
-                wellbeing_per_datetime[diary_offset] = float(m.group(6))
+                if m.group(6):
+                    well_being = float(m.group(6))
+                wellbeing_per_datetime[diary_offset] = well_being
             else:
                 contents = []
                 if diary_offset in ingredients_per_datetime:
