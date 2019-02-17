@@ -3,3 +3,5 @@ strawberry: fructose,nut
 saccharose: sugar
 Cheddar: cheese
 cheese: dairy product
+milk: dairy product, lactose
+banana: fructose

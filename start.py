@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 from pprint import pprint
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import figure
 
 
 def load_ingredients(raw):
@@ -37,11 +38,11 @@ def resolve_ingredient(synonyms, ingredient):
 def process_diary(ingredients):
     ingredients_per_datetime = {}
     wellbeing_per_datetime = {}
-    diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d+) (\\d+):(\\d+) ((\\d+)(.(\\d+))?)$")
+    diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d+) (\\d+):(\\d+) (-?(\\d+)(.(\\d+))?)$")
     next_day = 1
     first_datetime = 0
+    diary_offset = 0
     for line in diary_raw:
-        diary_offset = 0
         line = line.rstrip()
         if not line:
             next_day = 1
@@ -77,7 +78,6 @@ def process_diary(ingredients):
                         contents.append(synonym)
                 ingredients_per_datetime[diary_offset] = contents
             next_day = 0
-    pprint(first_datetime)
     return ingredients_per_datetime, wellbeing_per_datetime
 
 
@@ -91,17 +91,36 @@ ingredients_unresolved = load_ingredients(ingredients_raw)
 ingredients_resolved = resolve_ingredients(ingredients_unresolved)
 ingredients_diary, wellbeing_diary = process_diary(ingredients_resolved)
 
-pprint(ingredients_diary)
-pprint(wellbeing_diary)
-print()
-print()
-
 x = wellbeing_diary.keys()
 y = wellbeing_diary.values()
 
-offsets = [+100000, 0, -30000]
+all_ingredients = []
+all_ingredients.extend(ingredients_resolved.keys())
+for ingredients_of_diary_entry in ingredients_diary.values():
+    all_ingredients.extend(ingredients_of_diary_entry)
 
-for offset in offsets:
-    plt.plot([x+offset for x in x], y, linestyle='solid')
+all_ingredients_unique = list(set(all_ingredients))
+all_ingredients_unique.sort()
+
+number_of_ingredients = len(all_ingredients_unique)
+fig, axs = plt.subplots(number_of_ingredients, 1)
+
+fig.set_size_inches(10, number_of_ingredients * 2)
+
+plot_number = 0
+
+for inspected in all_ingredients_unique:
+    consumptions = []
+
+    for consumption_time in ingredients_diary.keys():
+        if inspected in ingredients_diary[consumption_time]:
+            consumptions.append(consumption_time)
+
+    for consumption in consumptions:
+        axs[plot_number].plot([x-consumption for x in x], y, linestyle='solid')
+
+    axs[plot_number].set_title(inspected)
+
+    plot_number += 1
 
 plt.show()
