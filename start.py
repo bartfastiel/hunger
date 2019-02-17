@@ -32,28 +32,8 @@ def resolve_ingredient(synonyms, ingredient):
     return ingredient_synonyms_resolved
 
 
-with open("ingredients.txt") as f:
-    ingredients_raw = f.readlines()
-
-with open("some.txt") as f:
-    diary_raw = f.readlines()
-
-ingredients_unresolved = load_ingredients(ingredients_raw)
-
-pprint(ingredients_unresolved)
-print()
-print()
-
-ingredients_resolved = resolve_ingredients(ingredients_unresolved)
-
-pprint(ingredients_resolved)
-print()
-print()
-
-contents_per_time = {}
-
-
-def process_diary():
+def process_diary(ingredients):
+    contents_per_time = {}
     diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d+) (\\d+):(\\d+) (\\d+)(.(\\d+))?$")
     next_day = 1
     time = "?"
@@ -61,10 +41,8 @@ def process_diary():
         line = line.rstrip()
         if not line:
             next_day = 1
-            print('-------')
         else:
             if next_day:
-                print('day:' + line)
                 m = diary_title_pattern.match(line)
                 if m:
                     year = m.group(3).zfill(2)
@@ -75,9 +53,8 @@ def process_diary():
                     minute = m.group(5).zfill(2)
 
                     time = year + "-" + month + "-" + day + "-" + hour + "-" + minute
-                    print("ok " + time)
                 else:
-                    print("nok")
+                    raise ValueError('Cannot parse diary title line: ' + line)
             else:
                 contents = []
                 if time in contents_per_time:
@@ -85,16 +62,25 @@ def process_diary():
                 else:
                     contents_per_time[time] = contents
                 contents.append(line)
-                if line in ingredients_resolved:
-                    for synonym in ingredients_resolved[line]:
+                if line in ingredients:
+                    for synonym in ingredients[line]:
                         contents.append(synonym)
                 contents_per_time[time] = contents
                 print(line)
             next_day = 0
+    return contents_per_time
 
 
-process_diary()
+with open("ingredients.txt") as f:
+    ingredients_raw = f.readlines()
 
-pprint(contents_per_time)
+with open("diary.txt") as f:
+    diary_raw = f.readlines()
+
+ingredients_unresolved = load_ingredients(ingredients_raw)
+ingredients_resolved = resolve_ingredients(ingredients_unresolved)
+diary = process_diary(ingredients_resolved)
+
+pprint(diary)
 print()
 print()
