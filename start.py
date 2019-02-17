@@ -98,8 +98,10 @@ print()
 
 x = wellbeing_diary.keys()
 y = wellbeing_diary.values()
-x2 = []
-x2.extend(x)
 
-plt.plot(x, y, linestyle='solid')
+offsets = [+100000, 0, -30000]
+
+for offset in offsets:
+    plt.plot([x+offset for x in x], y, linestyle='solid')
+
 plt.show()
