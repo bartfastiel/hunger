@@ -4,15 +4,14 @@ import re
 from pprint import pprint
 
 
-def load_ingredients():
+def load_ingredients(raw):
     ingredients = {}
-    with open("ingredients.txt", "r", encoding='utf-8') as f:
-        ingredient_pattern = re.compile("^\\s*(.*?)\\s*:\\s*(.*)\\s*")
-        for line in f:
-            line = line.rstrip()
-            m = ingredient_pattern.match(line)
-            if m:
-                ingredients[m.group(1)] = m.group(2).split(",")
+    ingredient_pattern = re.compile("^\\s*(.*?)\\s*:\\s*(.*)\\s*")
+    for line in raw:
+        line = line.rstrip()
+        m = ingredient_pattern.match(line)
+        if m:
+            ingredients[m.group(1)] = m.group(2).split(",")
     return ingredients
 
 
@@ -33,7 +32,10 @@ def resolve_ingredient(synonyms, ingredient):
     return ingredient_synonyms_resolved
 
 
-ingredients_unresolved = load_ingredients()
+with open("ingredients.txt") as f:
+    ingredients_raw = f.readlines()
+
+ingredients_unresolved = load_ingredients(ingredients_raw)
 
 pprint(ingredients_unresolved)
 print()
