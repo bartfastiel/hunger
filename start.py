@@ -66,7 +66,6 @@ def process_diary(ingredients):
                     for synonym in ingredients[line]:
                         contents.append(synonym)
                 contents_per_time[time] = contents
-                print(line)
             next_day = 0
     return contents_per_time
 
