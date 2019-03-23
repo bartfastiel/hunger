@@ -3,7 +3,6 @@
 import re
 from datetime import datetime
 import matplotlib.pyplot as plt
-import constant
 
 
 def load_ingredients(raw):
@@ -34,9 +33,9 @@ def resolve_ingredient(synonyms, ingredient):
     return ingredient_synonyms_resolved
 
 
-def process_diary(ingredients):
-    ingredients_per_datetime = {}
-    wellbeing_per_datetime = {}
+def parse_diary(diary_raw, ingredients):
+    ingredients_diary = {}
+    wellbeing_diary = {}
     well_being = 0
     diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d*) (\\d+):(\\d+)( -?(\\d+)(.(\\d+))?)?$")
     next_day = 1
@@ -66,23 +65,23 @@ def process_diary(ingredients):
                 if not first_datetime:
                     first_datetime = diary_datetime
 
-                diary_offset = (diary_datetime - first_datetime).total_seconds()
+                diary_offset = (diary_datetime - first_datetime).total_seconds() / 3600
                 if m.group(6):
                     well_being = float(m.group(6))
-                wellbeing_per_datetime[diary_offset] = well_being
+                wellbeing_diary[diary_offset] = well_being
             else:
                 contents = []
-                if diary_offset in ingredients_per_datetime:
-                    contents = ingredients_per_datetime[diary_offset]
+                if diary_offset in ingredients_diary:
+                    contents = ingredients_diary[diary_offset]
                 else:
-                    ingredients_per_datetime[diary_offset] = contents
+                    ingredients_diary[diary_offset] = contents
                 contents.append(line)
                 if line in ingredients:
                     for synonym in ingredients[line]:
                         contents.append(synonym)
-                ingredients_per_datetime[diary_offset] = contents
+                ingredients_diary[diary_offset] = contents
             next_day = 0
-    return ingredients_per_datetime, wellbeing_per_datetime
+    return ingredients_diary, wellbeing_diary
 
 
 with open("ingredients.txt") as f:
@@ -93,7 +92,7 @@ with open("diary.txt") as f:
 
 ingredients_unresolved = load_ingredients(ingredients_raw)
 ingredients_resolved = resolve_ingredients(ingredients_unresolved)
-ingredients_diary, wellbeing_diary = process_diary(ingredients_resolved)
+ingredients_diary, wellbeing_diary = parse_diary(diary_raw, ingredients_resolved)
 
 x = wellbeing_diary.keys()
 y = wellbeing_diary.values()
@@ -124,7 +123,9 @@ for inspected in all_ingredients_unique:
         axs[plot_number].plot([x-consumption for x in x], y, linestyle='solid')
 
     axs[plot_number].set_title(inspected)
-    axs[plot_number].set_xlim([-1*constant.DAY, +5*constant.DAY])
+    axs[plot_number].set_xlim([-1*24, +4*24])
+    axs[plot_number].set_xticks([0 + x*24 for x in range(-1,+5)])
+    axs[plot_number].set_xticklabels(["day " + str(x) for x in range(-1,+5)])
 
     plot_number += 1
 
