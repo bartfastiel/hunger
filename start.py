@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import re
+import io
 from datetime import datetime
 import matplotlib.pyplot as plt
 
@@ -97,10 +98,10 @@ def mean(numbers):
     if len(numbers) > 0:
         return float(sum(numbers)) / len(numbers)
 
-with open("ingredients.txt") as f:
+with io.open("ingredients.txt", encoding="utf-8") as f:
     ingredients_raw = f.readlines()
 
-with open("diary.txt") as f:
+with io.open("diary.txt", encoding="utf-8") as f:
     diary_raw = f.readlines()
 
 ingredients_unresolved = load_ingredients(ingredients_raw)
