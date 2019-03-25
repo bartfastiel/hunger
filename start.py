@@ -5,6 +5,7 @@ import io
 from datetime import datetime
 import matplotlib.pyplot as plt
 
+sort_by_number_of_consumptions = False
 
 def load_ingredients(raw):
     ingredients = {}
@@ -119,21 +120,40 @@ for ingredients_of_diary_entry in ingredients_diary.values():
 all_ingredients_unique = list(set(all_ingredients))
 all_ingredients_unique.sort()
 
-number_of_ingredients = len(all_ingredients_unique)
+interesting_ingredients = []
+if sort_by_number_of_consumptions:
+    ingredients_with_number_of_consumptions = {}
+    for inspected in all_ingredients_unique:
+        consumptions = 0
+        for consumption_time in ingredients_diary.keys():
+            if inspected in ingredients_diary[consumption_time]:
+                consumptions += 1
+        ingredients_with_number_of_consumptions[inspected] = consumptions
+
+    interesting_ingredients = sorted(
+        filter(
+            lambda x: ingredients_with_number_of_consumptions[x] > 1, ingredients_with_number_of_consumptions.keys()
+        ),
+        key=lambda x: ingredients_with_number_of_consumptions[x], reverse=True
+    )
+else:
+    interesting_ingredients = all_ingredients_unique
+
+number_of_ingredients = len(interesting_ingredients)
 fig, axs = plt.subplots(number_of_ingredients, 1)
 
 fig.set_size_inches(10, number_of_ingredients * 2)
 
 plot_number = 0
 
-for inspected in all_ingredients_unique:
+for inspected in interesting_ingredients:
     consumption_times = []
 
     for consumption_time in ingredients_diary.keys():
         if inspected in ingredients_diary[consumption_time]:
             consumption_times.append(consumption_time)
 
-    if len(all_ingredients_unique) > 1:
+    if len(interesting_ingredients) > 1:
         subplot = axs[plot_number]
     else:
         subplot = axs
