@@ -79,7 +79,7 @@ def parse_diary(diary_raw, ingredients):
                         hours_inbetween = diary_offset - old_diary_offset
                         for i in range(1, hours_inbetween + 1):
                             wellbeing_diary[old_diary_offset + i] = old_well_being * (
-                                        1 - (i / hours_inbetween)) + well_being * (i / hours_inbetween)
+                                    1 - (i / hours_inbetween)) + well_being * (i / hours_inbetween)
             else:
                 contents = []
                 if diary_offset in ingredients_diary:
@@ -98,6 +98,7 @@ def parse_diary(diary_raw, ingredients):
 def mean(numbers):
     if len(numbers) > 0:
         return float(sum(numbers)) / len(numbers)
+
 
 with io.open("ingredients.txt", encoding="utf-8") as f:
     ingredients_raw = f.readlines()
@@ -165,7 +166,7 @@ for inspected in interesting_ingredients:
     for consumption_time in consumption_times:
         for relative_time in range(-1 * 24, +4 * 24):
             if 0 < (consumption_time + relative_time) < len(well_beings):
-                well_being_per_relative_time[relative_time+24].append(well_beings[consumption_time + relative_time])
+                well_being_per_relative_time[relative_time + 24].append(well_beings[consumption_time + relative_time])
         subplot.plot([time - consumption_time for time in times], well_beings, linestyle='-', color='#aaaaaa')
 
     average_well_being = [mean(x) for x in well_being_per_relative_time]
