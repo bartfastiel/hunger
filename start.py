@@ -64,11 +64,20 @@ def parse_diary(diary_raw, ingredients):
 
                 if not first_datetime:
                     first_datetime = diary_datetime
+                    wellbeing_diary[diary_offset] = well_being
+                else:
+                    old_diary_offset = diary_offset
+                    old_well_being = wellbeing_diary[old_diary_offset]
 
-                diary_offset = (diary_datetime - first_datetime).total_seconds() / 3600
-                if m.group(6):
-                    well_being = float(m.group(6))
-                wellbeing_diary[diary_offset] = well_being
+                    diary_offset = round((diary_datetime - first_datetime).total_seconds() / 3600)
+                    if m.group(6):
+                        well_being = float(m.group(6))
+
+                    if (old_diary_offset < diary_offset):
+                        hours_inbetween = diary_offset - old_diary_offset
+                        for i in range(1, hours_inbetween + 1):
+                            wellbeing_diary[old_diary_offset + i] = old_well_being * (
+                                        1 - (i / hours_inbetween)) + well_being * (i / hours_inbetween)
             else:
                 contents = []
                 if diary_offset in ingredients_diary:
@@ -84,6 +93,10 @@ def parse_diary(diary_raw, ingredients):
     return ingredients_diary, wellbeing_diary
 
 
+def mean(numbers):
+    if len(numbers) > 0:
+        return float(sum(numbers)) / len(numbers)
+
 with open("ingredients.txt") as f:
     ingredients_raw = f.readlines()
 
@@ -94,8 +107,8 @@ ingredients_unresolved = load_ingredients(ingredients_raw)
 ingredients_resolved = resolve_ingredients(ingredients_unresolved)
 ingredients_diary, wellbeing_diary = parse_diary(diary_raw, ingredients_resolved)
 
-x = wellbeing_diary.keys()
-y = wellbeing_diary.values()
+times = wellbeing_diary.keys()
+well_beings = list(wellbeing_diary.values())
 
 all_ingredients = []
 all_ingredients.extend(ingredients_resolved.keys())
@@ -113,19 +126,34 @@ fig.set_size_inches(10, number_of_ingredients * 2)
 plot_number = 0
 
 for inspected in all_ingredients_unique:
-    consumptions = []
+    consumption_times = []
 
     for consumption_time in ingredients_diary.keys():
         if inspected in ingredients_diary[consumption_time]:
-            consumptions.append(consumption_time)
+            consumption_times.append(consumption_time)
 
-    for consumption in consumptions:
-        axs[plot_number].plot([x-consumption for x in x], y, linestyle='solid')
+    if len(all_ingredients_unique) > 1:
+        subplot = axs[plot_number]
+    else:
+        subplot = axs
 
-    axs[plot_number].set_title(inspected)
-    axs[plot_number].set_xlim([-1*24, +4*24])
-    axs[plot_number].set_xticks([0 + x*24 for x in range(-1,+5)])
-    axs[plot_number].set_xticklabels(["day " + str(x) for x in range(-1,+5)])
+    well_being_per_relative_time = []
+    for i in range(-1 * 24, +4 * 24):
+        well_being_per_relative_time.append([])
+
+    for consumption_time in consumption_times:
+        for relative_time in range(-1 * 24, +4 * 24):
+            if 0 < (consumption_time + relative_time) < len(well_beings):
+                well_being_per_relative_time[relative_time+24].append(well_beings[consumption_time + relative_time])
+        subplot.plot([time - consumption_time for time in times], well_beings, linestyle='-', color='#aaaaaa')
+
+    average_well_being = [mean(x) for x in well_being_per_relative_time]
+    subplot.plot(range(-1 * 24, +4 * 24), average_well_being, linestyle='-', )
+
+    subplot.set_title(inspected)
+    subplot.set_xlim([-1 * 24, +4 * 24])
+    subplot.set_xticks([0 + x * 24 for x in range(-1, +5)])
+    subplot.set_xticklabels(["day " + str(x) for x in range(-1, +5)])
 
     plot_number += 1
 
