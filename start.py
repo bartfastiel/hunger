@@ -40,11 +40,14 @@ def parse_diary(diary_raw, ingredients):
     wellbeing_diary = {}
     well_being = 0
     diary_title_pattern = re.compile("^(\\d+)\\.(\\d+)\\.(\\d*) (\\d+):(\\d+)( -?(\\d+)(.(\\d+))?)?$")
+    comment_pattern = re.compile("^#.*")
     next_day = 1
     first_datetime = 0
     diary_offset = 0
     for line in diary_raw:
         line = line.rstrip()
+        if (comment_pattern.match(line)):
+            continue
         if not line:
             next_day = 1
         else:
