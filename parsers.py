@@ -30,7 +30,7 @@ def resolve_ingredient(synonyms, ingredient):
     return ingredient_synonyms_resolved
 
 
-def parse_diary(diary_raw, ingredients):
+def parse_diary(diary_raw, ingredients, interpolate=True):
     ingredients_diary = {}
     wellbeing_diary = {}
     well_being = 0
@@ -73,11 +73,14 @@ def parse_diary(diary_raw, ingredients):
                     if m.group(6):
                         well_being = float(m.group(6))
 
-                    if (old_diary_offset < diary_offset):
-                        hours_inbetween = diary_offset - old_diary_offset
-                        for i in range(1, hours_inbetween + 1):
-                            wellbeing_diary[old_diary_offset + i] = old_well_being * (
-                                    1 - (i / hours_inbetween)) + well_being * (i / hours_inbetween)
+                    if interpolate:
+                        if (old_diary_offset < diary_offset):
+                            hours_inbetween = diary_offset - old_diary_offset
+                            for i in range(1, hours_inbetween + 1):
+                                wellbeing_diary[old_diary_offset + i] = old_well_being * (
+                                        1 - (i / hours_inbetween)) + well_being * (i / hours_inbetween)
+                    else:
+                        wellbeing_diary[diary_offset] = well_being
             else:
                 contents = []
                 if diary_offset in ingredients_diary:
